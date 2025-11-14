@@ -50,6 +50,7 @@ tower-http = { version = "0.6.2", features = [
     "compression-gzip",
 ] }
 tokio-util = { version = "0.7" }
+phf = "0.13.1"
 
 [dev-dependencies]
 tracing-test = { version = "0.2", features = ["no-env-filter"] }
