@@ -10,9 +10,9 @@ pub struct ProcessMetrics {
     pub name: String,
 
     pub rss: u64,
-    pub utime: u64,
-    pub stime: u64,
-    pub cpu_seconds_total: u64,
+    pub utime: f64,
+    pub stime: f64,
+    pub cpu_seconds_total: f64,
     pub memory_usage_bytes: u64,
     pub num_fds: u64,
     pub num_procs: u64,
@@ -34,8 +34,8 @@ impl ProcessMetrics {
         };
 
         let mut sum_rss_of_procs = 0;
-        let mut sum_utime = 0;
-        let mut sum_stime = 0;
+        let mut sum_utime = 0f64;
+        let mut sum_stime = 0f64;
         let mut sum_io_read_bytes = 0;
         let mut sum_io_write_bytes = 0;
         let mut sum_fds = 0;
@@ -45,11 +45,12 @@ impl ProcessMetrics {
         let mut sum_minflt = 0;
         let mut min_start_time = None;
         let page_size = procfs::page_size();
+        let clock_tick = procfs::ticks_per_second() as f64;
 
         for process in proc_iter {
             let stat = process.stat();
-            sum_utime += stat.utime;
-            sum_stime += stat.stime;
+            sum_utime += stat.utime as f64 / clock_tick;
+            sum_stime += stat.stime as f64 / clock_tick;
             sum_rss_of_procs += stat.rss * page_size;
             sum_threads += stat.num_threads.saturating_cast::<u64>();
             sum_majflt += stat.majflt;

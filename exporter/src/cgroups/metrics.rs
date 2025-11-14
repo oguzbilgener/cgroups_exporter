@@ -37,9 +37,9 @@ pub struct CgroupMetrics {
     // It would be easier to reuse the `ProcessMetrics struct and use `#[serde(flatten)]`,
     // but the serde uses a the map serializer and serde_prom doesn't support maps yet.
     pub rss: u64,
-    pub utime: u64,
-    pub stime: u64,
-    pub cpu_seconds_total: u64,
+    pub utime: f64,
+    pub stime: f64,
+    pub cpu_seconds_total: f64,
     pub memory_usage_bytes: u64,
     pub num_fds: u64,
     pub num_procs: u64,
