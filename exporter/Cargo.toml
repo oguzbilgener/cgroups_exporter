@@ -41,7 +41,7 @@ shell-quote = "0.7.2"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.12"
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["json", "env-filter"] }
+tracing-subscriber = { version = "0.3.20", features = ["json", "env-filter"] }
 tokio = { version = "1.44.2", features = ["fs", "rt", "macros", "signal"] }
 tokio-stream = { version = "0.1.0", features = ["sync"] }
 tower-http = { version = "0.6.2", features = [
