@@ -1,4 +1,4 @@
-FROM rust:1.87-alpine AS base
+FROM rust:1.98-alpine AS base
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN apk update && \
     apk add --no-cache openssh git build-base musl-dev openssl perl && \

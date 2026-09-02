@@ -2,7 +2,7 @@ use std::sync::{Arc, LazyLock};
 
 use anyhow::Context as _;
 use cgroups_explorer::Explorer;
-use cgroups_rs::Cgroup;
+use cgroups_rs::fs::Cgroup;
 use tokio::sync::{Semaphore, mpsc};
 use tokio_stream::{Stream, StreamExt, wrappers::ReceiverStream};
 use tracing::{debug, error};

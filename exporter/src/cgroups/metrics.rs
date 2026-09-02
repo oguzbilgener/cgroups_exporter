@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use anyhow::Context as _;
-use cgroups_rs::{
+use cgroups_rs::fs::{
     Cgroup,
     blkio::{BlkIo, BlkIoController},
     cpu::CpuController,
     cpuacct::{CpuAcct, CpuAcctController},
     cpuset::CpuSet,
-    memory::{MemController, Memory},
+    memory::{MemController, MemSwap, Memory},
 };
 use new_string_template::template::Template;
 use procfs::process::Process;
@@ -32,6 +32,7 @@ pub struct CgroupMetrics {
     pub cpuacct: Option<CpuAcct>,
     pub cpuset: Option<CpuSet>,
     pub memory: Option<Memory>,
+    pub memswap: Option<MemSwap>,
     pub blkio: Option<BlkIo>,
 
     // It would be easier to reuse the `ProcessMetrics struct and use `#[serde(flatten)]`,
@@ -67,12 +68,13 @@ impl CgroupMetrics {
 
         if let Some(ctrl) = cgroup.controller_of::<MemController>() {
             metrics.memory = Some(ctrl.memory_stat());
+            metrics.memswap = Some(ctrl.memswap());
         }
 
-        if cgroup.v2() {
-            if let Some(ctrl) = cgroup.controller_of::<CpuController>() {
-                metrics.cpu = Some(parse_v2_stat(&ctrl.cpu().stat));
-            }
+        if cgroup.v2()
+            && let Some(ctrl) = cgroup.controller_of::<CpuController>()
+        {
+            metrics.cpu = Some(parse_v2_stat(&ctrl.cpu().stat));
         }
 
         if let Some(ctrl) = cgroup.controller_of::<CpuAcctController>() {
@@ -198,20 +200,20 @@ fn parse_v2_stat(stat: &str) -> CpuStat {
     let mut v2_stat = CpuStat::default();
     for line in stat.lines() {
         let mut parts = line.split_whitespace();
-        if let Some(key) = parts.next() {
-            if let Some(value) = parts.next() {
-                match key {
-                    "usage_usec" => v2_stat.usage_usec = value.parse().ok(),
-                    "user_usec" => v2_stat.user_usec = value.parse().ok(),
-                    "system_usec" => v2_stat.system_usec = value.parse().ok(),
-                    "nice_usec" => v2_stat.nice_usec = value.parse().ok(),
-                    "nr_periods" => v2_stat.nr_periods = value.parse().ok(),
-                    "nr_throttled" => v2_stat.nr_throttled = value.parse().ok(),
-                    "throttled_usec" => v2_stat.throttled_usec = value.parse().ok(),
-                    "nr_bursts" => v2_stat.nr_bursts = value.parse().ok(),
-                    "burst_usec" => v2_stat.burst_usec = value.parse().ok(),
-                    _ => {}
-                }
+        if let Some(key) = parts.next()
+            && let Some(value) = parts.next()
+        {
+            match key {
+                "usage_usec" => v2_stat.usage_usec = value.parse().ok(),
+                "user_usec" => v2_stat.user_usec = value.parse().ok(),
+                "system_usec" => v2_stat.system_usec = value.parse().ok(),
+                "nice_usec" => v2_stat.nice_usec = value.parse().ok(),
+                "nr_periods" => v2_stat.nr_periods = value.parse().ok(),
+                "nr_throttled" => v2_stat.nr_throttled = value.parse().ok(),
+                "throttled_usec" => v2_stat.throttled_usec = value.parse().ok(),
+                "nr_bursts" => v2_stat.nr_bursts = value.parse().ok(),
+                "burst_usec" => v2_stat.burst_usec = value.parse().ok(),
+                _ => {}
             }
         }
     }
@@ -221,12 +223,19 @@ fn parse_v2_stat(stat: &str) -> CpuStat {
 #[cfg(test)]
 mod tests {
     use cgroups_explorer::Explorer;
-    use cgroups_exporter_config::RewriteCgroupName;
     use std::collections::HashMap;
 
-    use crate::shell::MockEvaluator;
+    use cgroups_exporter_config::RewriteCgroupName;
+    use cgroups_rs::fs::memory::MemoryStat;
+    use serde::Serialize;
 
-    use super::*;
+    use crate::{
+        cgroups::metrics::CgroupMetrics,
+        matcher::{CgroupMatcher, NameMatcher},
+        shell::MockEvaluator,
+    };
+
+    const V2_SWAP_CURRENT: u64 = 3_784_704;
 
     #[test]
     fn serialize_cgroup_metrics() -> anyhow::Result<()> {
@@ -262,5 +271,42 @@ mod tests {
         }
 
         Ok(())
+    }
+
+    #[test]
+    fn serialize_cgroup_v2_swap_usage() -> anyhow::Result<()> {
+        let metrics = SerializableCgroupMemory {
+            memory: SerializableMemory {
+                stat: MemoryStat {
+                    swap: V2_SWAP_CURRENT,
+                    ..MemoryStat::default()
+                },
+            },
+        };
+        let labels = HashMap::from([("cgroup", "fixture.scope")]);
+        let metadata = HashMap::new();
+
+        let serialized =
+            serde_prom::to_prometheus_text(&metrics, Some("cgroup"), &metadata, labels)?;
+        let swap_samples = serialized
+            .lines()
+            .filter(|line| line.starts_with("cgroup_memory_stat_swap{"))
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            swap_samples,
+            vec!["cgroup_memory_stat_swap{cgroup=\"fixture.scope\"} 3784704"]
+        );
+        Ok(())
+    }
+
+    #[derive(Serialize)]
+    struct SerializableCgroupMemory {
+        memory: SerializableMemory,
+    }
+
+    #[derive(Serialize)]
+    struct SerializableMemory {
+        stat: MemoryStat,
     }
 }

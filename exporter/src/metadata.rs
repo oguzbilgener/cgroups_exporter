@@ -502,7 +502,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
             "memory_stat_swap",
             MetricDescriptor {
                 metric_type: MetricType::Gauge,
-                help: "Swap usage.",
+                help: "Current swap usage in bytes. On cgroup v2, this includes descendant cgroups.",
                 labels: vec![],
                 rename: None,
             },
@@ -764,7 +764,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
             "memory_swappiness",
             MetricDescriptor {
                 metric_type: MetricType::Gauge,
-                help: "Set the tendency of the kernel to swap out parts of the address space consumed by the control group's tasks.",
+                help: "Set the tendency of the kernel to swap out parts of the address space consumed by the control group's tasks. Available on cgroup v1 only.",
                 labels: vec![],
                 rename: None,
             },
@@ -776,6 +776,44 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
                 help: "If set, under OOM conditions the kernel will try to reclaim memory from the children of the offending process.",
                 labels: vec![],
                 rename: None,
+            },
+        ),
+        // CGROUP MEMSWAP METRICS (cgroups_rs::memory::Memswap)
+        // MemSwap struct fields
+        (
+            "memswap_fail_cnt",
+            MetricDescriptor {
+                metric_type: MetricType::Counter,
+                help: "How many times the limit has been hit.",
+                labels: vec![],
+                rename: Some("memory_swap_fail_cnt_total"),
+            },
+        ),
+        (
+            "memswap_limit_in_bytes",
+            MetricDescriptor {
+                metric_type: MetricType::Gauge,
+                help: "The limit in bytes of the memory+swap usage of the control group's tasks.",
+                labels: vec![],
+                rename: Some("memory_swap_limit_in_bytes"),
+            },
+        ),
+        (
+            "memswap_usage_in_bytes",
+            MetricDescriptor {
+                metric_type: MetricType::Gauge,
+                help: "The current usage of memory+swap by the control group's tasks.",
+                labels: vec![],
+                rename: Some("memory_swap_usage_in_bytes"),
+            },
+        ),
+        (
+            "memswap_max_usage_in_bytes",
+            MetricDescriptor {
+                metric_type: MetricType::Gauge,
+                help: "The maximum observed usage of memory+swap by the control group's tasks.",
+                labels: vec![],
+                rename: Some("memory_swap_max_usage_in_bytes"),
             },
         ),
         // CGROUP BLKIO METRICS
