@@ -90,6 +90,10 @@ In this table, the default namespace, `process` is used. If you specify a differ
 | cgroup_memory_stat_total_unevictable                   | gauge   | Total unevictable pages including descendant control groups.                                                   |
 | cgroup_memory_swappiness                               | gauge   | Set the tendency of the kernel to swap out memory. Available on cgroup v1 only.                                 |
 | cgroup_memory_use_hierarchy                            | gauge   | If set, under OOM conditions the kernel will try to reclaim memory from the children of the offending process. |
+| cgroup_memory_memsw_fail_cnt_total                     | counter | How many times the memory+swap limit has been hit.                                                             |
+| cgroup_memory_memsw_limit_in_bytes                     | gauge   | The limit in bytes of the memory+swap usage of the control group's tasks.                                      |
+| cgroup_memory_memsw_usage_in_bytes                     | gauge   | The current usage of memory+swap by the control group's tasks.                                                 |
+| cgroup_memory_memsw_max_usage_in_bytes                 | gauge   | The maximum observed usage of memory+swap by the control group's tasks.                                        |
 | cgroup_blkio_io_merged_total                           | counter | Same as `io_merged`, but only reports the total number.                                                        |
 | cgroup_blkio_io_merged_recursive_total                 | counter | Same as `io_merged_recursive`, but only reports the total number.                                              |
 | cgroup_blkio_io_queued_total                           | counter | Same as `io_queued`, but only reports the total number.                                                        |

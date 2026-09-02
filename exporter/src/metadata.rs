@@ -204,7 +204,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
                 rename: Some("cpu_burst_usec_total"),
             },
         ),
-        // CGROUP MEMORY METRICS (cgroups_rs::memory::Memory)
+        // CGROUP MEMORY METRICS (cgroups_rs::fs::memory::Memory)
         // Memory struct fields
         (
             "memory_fail_cnt",
@@ -778,7 +778,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
                 rename: None,
             },
         ),
-        // CGROUP MEMSWAP METRICS (cgroups_rs::memory::Memswap)
+        // CGROUP MEMSWAP METRICS (cgroups_rs::fs::memory::Memswap)
         // MemSwap struct fields
         (
             "memswap_fail_cnt",
@@ -786,7 +786,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
                 metric_type: MetricType::Counter,
                 help: "How many times the limit has been hit.",
                 labels: vec![],
-                rename: Some("memory_swap_fail_cnt_total"),
+                rename: Some("memory_memsw_fail_cnt_total"),
             },
         ),
         (
@@ -795,7 +795,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
                 metric_type: MetricType::Gauge,
                 help: "The limit in bytes of the memory+swap usage of the control group's tasks.",
                 labels: vec![],
-                rename: Some("memory_swap_limit_in_bytes"),
+                rename: Some("memory_memsw_limit_in_bytes"),
             },
         ),
         (
@@ -804,7 +804,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
                 metric_type: MetricType::Gauge,
                 help: "The current usage of memory+swap by the control group's tasks.",
                 labels: vec![],
-                rename: Some("memory_swap_usage_in_bytes"),
+                rename: Some("memory_memsw_usage_in_bytes"),
             },
         ),
         (
@@ -813,7 +813,7 @@ pub static METADATA: LazyLock<HashMap<&str, MetricDescriptor<'_>>> = LazyLock::n
                 metric_type: MetricType::Gauge,
                 help: "The maximum observed usage of memory+swap by the control group's tasks.",
                 labels: vec![],
-                rename: Some("memory_swap_max_usage_in_bytes"),
+                rename: Some("memory_memsw_max_usage_in_bytes"),
             },
         ),
         // CGROUP BLKIO METRICS
