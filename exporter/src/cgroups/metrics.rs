@@ -11,7 +11,6 @@ use cgroups_rs::fs::{
 };
 use new_string_template::template::Template;
 use procfs::process::Process;
-use saturating_cast::SaturatingCast as _;
 use serde::Serialize;
 
 use crate::{
@@ -86,7 +85,7 @@ impl CgroupMetrics {
         }
 
         let processes_iter = cgroup.procs().into_iter().filter_map(|pid| {
-            let pid = pid.pid.saturating_cast();
+            let pid = saturating_cast::SaturatingCast::saturating_cast(pid.pid);
             Process::new(pid).ok()
         });
 

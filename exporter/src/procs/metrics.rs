@@ -1,7 +1,6 @@
 use super::Proc;
 use crate::render::Named;
 use procfs::WithCurrentSystemInfo as _;
-use saturating_cast::SaturatingCast as _;
 use serde::Serialize;
 
 #[derive(Serialize, Default, Debug, Clone)]
@@ -52,7 +51,8 @@ impl ProcessMetrics {
             sum_utime += stat.utime as f64 / clock_tick;
             sum_stime += stat.stime as f64 / clock_tick;
             sum_rss_of_procs += stat.rss * page_size;
-            sum_threads += stat.num_threads.saturating_cast::<u64>();
+            sum_threads +=
+                saturating_cast::SaturatingCast::saturating_cast::<u64>(stat.num_threads);
             sum_majflt += stat.majflt;
             sum_minflt += stat.minflt;
             if let Ok(start_time) = stat.starttime().get().map(|t| t.timestamp()) {
