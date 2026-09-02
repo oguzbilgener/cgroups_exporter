@@ -59,7 +59,7 @@ In this table, the default namespace, `process` is used. If you specify a differ
 | cgroup_memory_stat_mapped_file                         | gauge   | Mapped file memory usage.                                                                                      |
 | cgroup_memory_stat_dirty                               | gauge   | Dirty pages count.                                                                                             |
 | cgroup_memory_stat_writeback                           | gauge   | Pages in writeback.                                                                                            |
-| cgroup_memory_stat_swap                                | gauge   | Swap usage.                                                                                                    |
+| cgroup_memory_stat_swap                                | gauge   | Current swap usage in bytes. On cgroup v2, this is sourced from `memory.swap.current` and includes descendants. |
 | cgroup_memory_stat_pgpgin_total                        | counter | Number of pages paged in.                                                                                      |
 | cgroup_memory_stat_pgpgout_total                       | counter | Number of pages paged out.                                                                                     |
 | cgroup_memory_stat_pgfault_total                       | counter | Number of page faults.                                                                                         |
@@ -88,8 +88,12 @@ In this table, the default namespace, `process` is used. If you specify a differ
 | cgroup_memory_stat_total_inactive_file                 | gauge   | Total inactive file pages including descendant control groups.                                                 |
 | cgroup_memory_stat_total_active_file                   | gauge   | Total active file pages including descendant control groups.                                                   |
 | cgroup_memory_stat_total_unevictable                   | gauge   | Total unevictable pages including descendant control groups.                                                   |
-| cgroup_memory_swappiness                               | gauge   | Set the tendency of the kernel to swap out parts of the address space consumed by the control group's tasks.   |
+| cgroup_memory_swappiness                               | gauge   | Set the tendency of the kernel to swap out memory. Available on cgroup v1 only.                                 |
 | cgroup_memory_use_hierarchy                            | gauge   | If set, under OOM conditions the kernel will try to reclaim memory from the children of the offending process. |
+| cgroup_memory_memsw_fail_cnt_total                     | counter | How many times the memory+swap limit has been hit.                                                             |
+| cgroup_memory_memsw_limit_in_bytes                     | gauge   | The limit in bytes of the memory+swap usage of the control group's tasks.                                      |
+| cgroup_memory_memsw_usage_in_bytes                     | gauge   | The current usage of memory+swap by the control group's tasks.                                                 |
+| cgroup_memory_memsw_max_usage_in_bytes                 | gauge   | The maximum observed usage of memory+swap by the control group's tasks.                                        |
 | cgroup_blkio_io_merged_total                           | counter | Same as `io_merged`, but only reports the total number.                                                        |
 | cgroup_blkio_io_merged_recursive_total                 | counter | Same as `io_merged_recursive`, but only reports the total number.                                              |
 | cgroup_blkio_io_queued_total                           | counter | Same as `io_queued`, but only reports the total number.                                                        |

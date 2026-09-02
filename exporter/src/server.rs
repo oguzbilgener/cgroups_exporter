@@ -64,7 +64,7 @@ where
             TraceLayer::new_for_http(),
             // Graceful shutdown will wait for outstanding requests to complete. Add a timeout so
             // requests don't hang forever.
-            TimeoutLayer::new(TIMEOUT_DURATION),
+            TimeoutLayer::with_status_code(StatusCode::REQUEST_TIMEOUT, TIMEOUT_DURATION),
         ))
         .layer(CompressionLayer::new())
         .with_state((config, evaluator));

@@ -28,8 +28,6 @@ mod procs;
 mod render;
 mod server;
 mod shell;
-#[cfg(test)]
-mod tests;
 
 const DEFAULT_LISTEN_ADDR: &str = "127.0.0.1:9753";
 

@@ -9,7 +9,7 @@ strip = true
 
 [patch.crates-io]
 # A combination of several not-yet-reviewed PRs fixing panics and other issues in cgroups-rs
-cgroups-rs = { git = "https://github.com/oguzbilgener/cgroups-rs", rev = "bfb0ef7a4a88964ca06f04f517f3245395bc3912" }
+cgroups-rs = { git = "https://github.com/oguzbilgener/cgroups-rs", rev = "99f58507e120f19c41c27447fc9feee287c614de" }
 # serde_prom = { path ="../serde_prom" }
 
 
