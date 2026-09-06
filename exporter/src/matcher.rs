@@ -31,6 +31,7 @@ pub struct MatchableProcessConfig {
 #[derive(Debug, Clone)]
 pub struct CgroupMatcher {
     pub path: NameMatcher,
+    pub recursive: bool,
     pub rewrite: Option<RewriteCgroupName>,
 }
 
@@ -67,6 +68,7 @@ impl TryFrom<CgroupMatch> for CgroupMatcher {
     fn try_from(value: CgroupMatch) -> Result<Self, Self::Error> {
         let me = Self {
             path: value.path.try_into()?,
+            recursive: value.recursive,
             rewrite: value.rewrite,
         };
         if matches!(&me.path, NameMatcher::Glob(_))

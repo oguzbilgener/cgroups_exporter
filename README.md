@@ -47,6 +47,25 @@ The examples shown here can be combined in a single configuration file.
 For brevity, a few select metrics are shown here as the output.
 For the full list of metrics available, see [docs/metrics.md](docs/metrics.md).
 
+### Use case: Monitor a cgroup whose processes are one level down
+
+A cgroup on the unified hierarchy cannot both hold processes and enable controllers for its
+children, so a supervisor that gives each of its children a cgroup keeps its own processes in a
+child of its own. The controller files still cover the whole subtree, but the process derived
+metrics (`num_procs`, `rss`, `utime`, io and page faults) come from `cgroup.procs`, which lists
+only what the cgroup holds directly. Set `recursive` to sum the subtree instead.
+
+```yaml
+# yaml-language-server: $schema=./config_schema.json
+cgroups:
+  - match:
+      path: "my.scope/*"
+      recursive: true
+      removePrefix: "my.scope/"
+    metrics:
+      namespace: "my_service"
+```
+
 ### Use case: Monitor systemd services
 
 ```yaml
