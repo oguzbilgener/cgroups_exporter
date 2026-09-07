@@ -9,7 +9,6 @@ use cgroups_rs::fs::{
     cpu::CpuController,
     cpuacct::{CpuAcct, CpuAcctController},
     cpuset::CpuSet,
-    hierarchies,
     memory::{MemController, MemSwap, Memory},
 };
 use new_string_template::template::Template;
@@ -208,17 +207,21 @@ pub struct CpuStat {
 
 /// Every pid in the cgroup and in the cgroups below it.
 ///
-/// A v2 cgroup that keeps its own processes one level down lists none of its own, while the
-/// controller files it exposes already cover the whole subtree. Walking the subtree is what makes
-/// the two halves of a series agree. v1 has no such layout, so it reports what it holds.
+/// Each v1 controller can have its own mount, while all v2 controllers share one. Walk every
+/// distinct controller path so recursive matching works with both hierarchy versions.
 fn subtree_procs(cgroup: &Cgroup) -> Vec<CgroupPid> {
     let mut pids = cgroup.procs();
-    if !cgroup.v2() {
-        return pids;
+    let mut controller_paths = cgroup
+        .subsystems()
+        .iter()
+        .map(|subsystem| subsystem.to_controller().path())
+        .collect::<Vec<_>>();
+    controller_paths.sort_unstable();
+    controller_paths.dedup();
+
+    for path in controller_paths {
+        pids.extend(descendant_procs(path));
     }
-    pids.extend(descendant_procs(
-        &hierarchies::auto().root().join(cgroup.path()),
-    ));
     pids.sort();
     pids.dedup();
     pids
@@ -286,10 +289,13 @@ fn parse_v2_stat(stat: &str) -> CpuStat {
 mod tests {
     use cgroups_explorer::Explorer;
     use std::collections::HashMap;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
-    use super::{descendant_procs, read_procs};
-    use cgroups_rs::CgroupPid;
+    use super::{descendant_procs, subtree_procs};
+    use cgroups_rs::{
+        CgroupPid,
+        fs::{Cgroup, Hierarchy, Subsystem, memory::MemController},
+    };
 
     use cgroups_exporter_config::RewriteCgroupName;
     use cgroups_rs::fs::memory::MemoryStat;
@@ -368,28 +374,24 @@ mod tests {
     }
 
     #[test]
-    fn a_recursive_match_sums_the_subtree_and_not_the_cgroup_it_starts_from() {
-        // The layout namespacer leaves on cgroup v2: the matched cgroup holds nothing itself
-        // and its processes are one level down, beside a nested run with a level of its own.
+    fn a_recursive_match_includes_direct_and_descendant_procs_on_v1_and_v2() {
         let root = tempfile::tempdir().unwrap();
         let component = root.path().join("component");
-        fake_cgroup(&component, "");
-        fake_cgroup(&component.join("_self"), "11\n12\n");
-        fake_cgroup(&component.join("inner"), "");
-        fake_cgroup(&component.join("inner").join("_self"), "13\n");
+        fake_cgroup(&component, "10\n");
+        fake_cgroup(&component.join("child"), "10\n11\n");
+        fake_cgroup(&component.join("child").join("grandchild"), "12\n");
 
-        let found: Vec<u64> = sorted_pids(descendant_procs(&component));
+        for v2 in [false, true] {
+            let cgroup = Cgroup::load(
+                Box::new(FakeHierarchy {
+                    root: root.path().to_path_buf(),
+                    v2,
+                }),
+                "component",
+            );
 
-        assert_eq!(
-            found,
-            vec![11, 12, 13],
-            "a recursive match has to reach every level, since the cgroup it matches holds \
-             nothing of its own"
-        );
-        assert!(
-            sorted_pids(read_procs(&component)).is_empty(),
-            "the matched cgroup itself holds no process, which is why the walk is needed"
-        );
+            assert_eq!(sorted_pids(subtree_procs(&cgroup)), vec![10, 11, 12]);
+        }
     }
 
     #[test]
@@ -417,6 +419,39 @@ mod tests {
         let mut pids: Vec<u64> = pids.into_iter().map(|pid| pid.pid).collect();
         pids.sort_unstable();
         pids
+    }
+
+    #[derive(Clone, Debug)]
+    struct FakeHierarchy {
+        root: PathBuf,
+        v2: bool,
+    }
+
+    impl Hierarchy for FakeHierarchy {
+        fn subsystems(&self) -> Vec<Subsystem> {
+            vec![Subsystem::Mem(MemController::new(
+                self.root.clone(),
+                PathBuf::new(),
+                self.v2,
+            ))]
+        }
+
+        fn root(&self) -> PathBuf {
+            self.root.clone()
+        }
+
+        fn root_control_group(&self) -> Cgroup {
+            Cgroup::load(Box::new(self.clone()), "")
+        }
+
+        fn parent_control_group(&self, path: &str) -> Cgroup {
+            let parent = Path::new(path).parent().unwrap_or_else(|| Path::new(""));
+            Cgroup::load(Box::new(self.clone()), parent)
+        }
+
+        fn v2(&self) -> bool {
+            self.v2
+        }
     }
 
     #[derive(Serialize)]
