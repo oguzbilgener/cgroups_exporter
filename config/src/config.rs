@@ -60,6 +60,11 @@ pub struct MetricsConfig {
 pub struct CgroupMatch {
     /// The name matcher for the cgroup(s). This can be a glob or a regex.
     pub path: NameMatch,
+    /// Sum the processes of the whole subtree under a matched cgroup, not just the ones it holds
+    /// directly. The controller files a cgroup exposes already cover its descendants, so turn this
+    /// on when the matched cgroup keeps its processes one level down.
+    #[serde(default)]
+    pub recursive: bool,
     /// Group name rewrite rules.
     #[serde(flatten, default)]
     pub rewrite: Option<RewriteCgroupName>,
@@ -232,6 +237,7 @@ mod tests {
                     CgroupConfig {
                         match_by: CgroupMatch {
                             path: NameMatch::Glob("services.scope/*".to_string()),
+                            recursive: false,
                             rewrite: Some(RewriteCgroupName::RemovePrefix {
                                 remove_prefix: "services.scope/".to_string()
                             })
@@ -249,6 +255,7 @@ mod tests {
                                 regex: "^system.slice/docker-(?<containerId>\\w+)\\.scope$"
                                     .to_string()
                             },
+                            recursive: false,
                             rewrite: Some(RewriteCgroupName::Template {
                                 name: Templated::Shell {
                                     shell: "docker ps --filter \"id={containerId}\" --format \"{{.Names}}\"".to_string(),
@@ -269,6 +276,7 @@ mod tests {
                                 regex: "^system.slice/docker-(?<containerId>\\w+)\\.scope$"
                                     .to_string()
                             },
+                            recursive: false,
                             rewrite: Some(
                                 RewriteCgroupName::Template {
                                     name: Templated::Name("{containerId}".to_string())

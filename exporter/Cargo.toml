@@ -55,6 +55,7 @@ tokio-util = { version = "0.7" }
 tracing-test = { version = "0.2", features = ["no-env-filter"] }
 pretty_assertions = "1.4.1"
 mockall = "0.13.1"
+tempfile = "3.27.0"
 
 [build-dependencies]
 cargo-emit = "0.2"
