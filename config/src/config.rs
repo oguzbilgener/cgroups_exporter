@@ -10,6 +10,7 @@ pub struct Config {
     /// A list of configs to use when collecting metrics from cgroups.
     pub cgroups: Vec<CgroupConfig>,
     /// A list of configs to use when collecting metrics from processes.
+    #[serde(default)]
     pub processes: Vec<ProcessConfig>,
     /// Configuration for the shell commands executor used when rewriting cgroup names with `Templated::Shell`.
     #[serde(default, rename = "shell")]
