@@ -58,7 +58,8 @@ pub struct MetricsConfig {
 #[derive(Debug, Clone, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CgroupMatch {
-    /// The name matcher for the cgroup(s). This can be a glob or a regex.
+    /// The name matcher for the cgroup(s). This can be a glob or a regex. Use the exact glob `/`
+    /// to match the root cgroup.
     pub path: NameMatch,
     /// Sum the processes of the whole subtree under a matched cgroup, not just the ones it holds
     /// directly. The controller files a cgroup exposes already cover its descendants, so turn this

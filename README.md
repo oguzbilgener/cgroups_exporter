@@ -47,6 +47,19 @@ The examples shown here can be combined in a single configuration file.
 For brevity, a few select metrics are shown here as the output.
 For the full list of metrics available, see [docs/metrics.md](docs/metrics.md).
 
+### Use case: Monitor the root cgroup
+
+Use the exact path `/` to select only the root cgroup. Controller metrics already include
+descendants; `recursive` also includes descendant processes in process-derived metrics.
+
+```yaml
+cgroups:
+  - match:
+      path: "/"
+      recursive: true
+      name: "root"
+```
+
 ### Use case: Monitor a cgroup whose processes are one level down
 
 A cgroup on the unified hierarchy cannot both hold processes and enable controllers for its

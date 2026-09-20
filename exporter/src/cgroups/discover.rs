@@ -107,6 +107,7 @@ fn discover_cgroup_for_match_blocking(
     match &matcher.path {
         NameMatcher::Glob(glob) => {
             let explorer = Explorer::detect_version()
+                .include_root(glob.as_str() == "/")
                 .include(vec![glob.to_string()])
                 .build()?;
             Ok(explorer.iter_cgroups())
@@ -117,5 +118,28 @@ fn discover_cgroup_for_match_blocking(
                 .build()?;
             Ok(explorer.iter_cgroups())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use glob::Pattern;
+
+    use super::discover_cgroup_for_match_blocking;
+    use crate::matcher::{CgroupMatcher, NameMatcher};
+
+    #[test]
+    fn discovers_only_root_for_slash_path() -> anyhow::Result<()> {
+        let matcher = CgroupMatcher {
+            path: NameMatcher::Glob(Pattern::new("/")?),
+            recursive: false,
+            rewrite: None,
+        };
+
+        let cgroups = discover_cgroup_for_match_blocking(&matcher)?.collect::<Vec<_>>();
+
+        assert_eq!(cgroups.len(), 1);
+        assert_eq!(cgroups[0].path(), "");
+        Ok(())
     }
 }

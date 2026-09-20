@@ -382,9 +382,9 @@ checksum = "f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527"
 
 [[package]]
 name = "cgroups-explorer"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d06b02c9905121641c7c471c50d4e3f804d2a182ab7e811348f9c15bfe1d5098"
+checksum = "a11d6ef3c07efbe25db826b9e3415c6adef857fc656e8609b55244d82337665b"
 dependencies = [
  "cgroups-rs",
  "derive_builder",

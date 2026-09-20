@@ -15,7 +15,7 @@ arc-swap = "1.7.1"
 bytes = "1.10.1"
 clap = { version = "4.5.32", features = ["derive"] }
 cgroups_exporter_config = { path = "../config", features = ["tokio"] }
-cgroups-explorer = { version = "0.5.0", features = ["regex"] }
+cgroups-explorer = { version = "0.6.0", features = ["regex"] }
 cgroups-rs = { version = "0.5.1", features = ["serde"] }
 envconfig = "0.11.0"
 derive-getters = { version = "0.5", features = ["auto_copy_getters"] }
