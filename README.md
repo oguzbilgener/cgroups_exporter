@@ -47,38 +47,6 @@ The examples shown here can be combined in a single configuration file.
 For brevity, a few select metrics are shown here as the output.
 For the full list of metrics available, see [docs/metrics.md](docs/metrics.md).
 
-### Use case: Monitor the root cgroup
-
-Use the exact path `/` to select only the root cgroup. Controller metrics already include
-descendants; `recursive` also includes descendant processes in process-derived metrics.
-
-```yaml
-cgroups:
-  - match:
-      path: "/"
-      recursive: true
-      name: "root"
-```
-
-### Use case: Monitor a cgroup whose processes are one level down
-
-A cgroup on the unified hierarchy cannot both hold processes and enable controllers for its
-children, so a supervisor that gives each of its children a cgroup keeps its own processes in a
-child of its own. The controller files still cover the whole subtree, but the process derived
-metrics (`num_procs`, `rss`, `utime`, io and page faults) come from `cgroup.procs`, which lists
-only what the cgroup holds directly. Set `recursive` to sum the subtree instead.
-
-```yaml
-# yaml-language-server: $schema=./config_schema.json
-cgroups:
-  - match:
-      path: "my.scope/*"
-      recursive: true
-      removePrefix: "my.scope/"
-    metrics:
-      namespace: "my_service"
-```
-
 ### Use case: Monitor systemd services
 
 ```yaml
@@ -235,6 +203,39 @@ process_cpu_seconds_total{name="py-two"} 23.2
 # TYPE process_start_time gauge
 process_start_time{name="py-one"} 1747622224
 process_start_time{name="py-two"} 1747622228
+```
+
+### Use case: Monitor the root cgroup
+
+Use the exact path `/` to select only the root cgroup. Controller metrics already include
+descendants; `recursive` also includes descendant processes in process-derived metrics.
+
+```yaml
+# yaml-language-server: $schema=./config_schema.json
+cgroups:
+  - match:
+      path: "/"
+      recursive: true
+      name: "root"
+```
+
+### Use case: Monitor a cgroup whose processes are one level down
+
+A cgroup on the unified hierarchy cannot both hold processes and enable controllers for its
+children, so a supervisor that gives each of its children a cgroup keeps its own processes in a
+child of its own. The controller files still cover the whole subtree, but the process derived
+metrics (`num_procs`, `rss`, `utime`, io and page faults) come from `cgroup.procs`, which lists
+only what the cgroup holds directly. Set `recursive` to sum the subtree instead.
+
+```yaml
+# yaml-language-server: $schema=./config_schema.json
+cgroups:
+  - match:
+      path: "my.scope/*"
+      recursive: true
+      removePrefix: "my.scope/"
+    metrics:
+      namespace: "my_service"
 ```
 
 ## Configuration Schema
